@@ -1,5 +1,6 @@
 // @ts-check
 
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/no-var-requires */
 const { spawnSync } = require('child_process');
 const fse = require('fs-extra');
@@ -7,55 +8,41 @@ const minimist = require('minimist');
 const path = require('path');
 const rcedit = require('rcedit');
 
-const args = minimist(process.argv.slice(2), {
-  string: ['dirname'],
-  boolean: ['appName'],
-  alias: { d: 'dirname', a: 'appName' },
-  default: { dirname: process.cwd() },
-  '--': true,
-  stopEarly: true /* populate _ with first non-option */,
-  unknown(args, options) {
-    console.error('\x1b[35m%s\x1b[0m', 'Unknown option supplied:', _);
-    throw new Error(JSON.stringify({ args, options }, null, 2));
-  } /* invoked on unknown param */,
-});
+async function main() {
+  const args = parseArgs();
 
-const DIRNAME = 'C:\\Users\\patr0nus\\repo\\';
-const APP_NAME = 'Pym';
+  // const DIRNAME = args.dirname;
+  // const APP_NAME = args.appName;
 
-const repoPath = path.resolve(DIRNAME, APP_NAME);
-process.on('unhandledRejection', (error) => {
-  throw error;
-});
+  const repoPath = args.dirname;
 
-const rceditAsync = (...args) =>
-  new Promise((resolve, reject) => {
-    rcedit(...args, (error) => (error == null ? resolve() : reject(error)));
-  });
-const system = (command, args) => spawnSync('cmd', ['/c', command, ...args], { stdio: 'inherit' });
+  const rceditAsync = (...args) =>
+    new Promise((resolve, reject) => {
+      rcedit(...args, (error) => (error == null ? resolve() : reject(error)));
+    });
+  const system = (command, args) => spawnSync('cmd', ['/c', command, ...args], { stdio: 'inherit' });
 
-const deskgapPath = path.resolve(repoPath, 'node_modules\\deskgap\\dist\\DeskGap');
-const appPath = path.resolve(repoPath, 'app');
+  const deskgapPath = path.resolve(repoPath, 'node_modules\\deskgap\\dist\\DeskGap');
+  const appPath = path.resolve(repoPath, 'app');
 
-const workingFolder = path.resolve(repoPath, 'release\\build');
+  const workingFolder = path.resolve(repoPath, 'release\\build');
 
-const executableIcon = path.resolve(repoPath, 'release\\pym.ico');
-const resources = path.resolve(repoPath, 'release\\resources');
-const appxmanifest = path.resolve(repoPath, 'release\\appxmanifest.xml');
-// const appxmanifest = path.resolve(repoPath,"release\\appxmanifest_selfsigning.xml")
-const signingPFX = null; // path.resolve(repoPath,"release\\AppxTestRootAgency.pfx")
+  const executableIcon = path.resolve(repoPath, 'release', args.icon);
+  const resources = path.resolve(repoPath, 'release\\resources');
+  const appxmanifest = path.resolve(repoPath, 'release\\appxmanifest.xml');
+  // const appxmanifest = path.resolve(repoPath,"release\\appxmanifest_selfsigning.xml")
+  const signingPFX = null; // path.resolve(repoPath,"release\\AppxTestRootAgency.pfx")
 
-let executableName = null;
-try {
-  const packageJSON = require(path.join(appPath, 'package.json'));
-  executableName = packageJSON.productName || packageJSON.name;
-} catch (e) {
-  console.error('\x1b[35m%s\x1b[0m', e);
-  throw e;
-  // process.exit(1);
-}
+  let executableName = null;
+  try {
+    const packageJSON = require(path.join(appPath, 'package.json'));
+    executableName = packageJSON.productName || packageJSON.name;
+  } catch (e) {
+    console.error('\x1b[35m%s\x1b[0m', e);
+    throw e;
+    // process.exit(1);
+  }
 
-(async () => {
   await fse.remove(workingFolder);
   await fse.mkdirp(workingFolder);
   process.chdir(workingFolder);
@@ -84,4 +71,39 @@ try {
     if (signingPFX != null)
       system('signtool', ['sign', '/fd', 'sha256', '/f', signingPFX, appxFile]);
   }
-})();
+}
+
+function parseArgs() {
+  /**
+   * @type {import('minimist').ParsedArgs & import('./types').ArgsType}
+   */
+  const args = minimist(process.argv.slice(2), {
+    string: ['dirname', 'appName', 'icon'],
+    alias: { d: 'dirname', a: 'appName', i: 'icon' },
+    default: { dirname: process.cwd() },
+    '--': true,
+    stopEarly: true /* populate _ with first non-option */,
+    unknown(args, options) {
+      console.error('\x1b[35m%s\x1b[0m', 'Unknown option supplied:', _);
+      throw new Error(JSON.stringify({ args, options }, null, 2));
+    } /* invoked on unknown param */,
+  });
+
+  /**
+   * @param {keyof import('./types').ArgsType} argName
+   * @returns {void}
+   */
+  function ensureArgExist(argName) {
+    if (args[argName] === undefined) throw new Error(`"${argName}" is required!`);
+  }
+
+  ensureArgExist('dirname');
+  ensureArgExist('icon');
+  return args;
+}
+
+process.on('unhandledRejection', (error) => {
+  throw error;
+});
+
+main();
