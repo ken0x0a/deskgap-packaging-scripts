@@ -1,16 +1,24 @@
 {
-  "name": "pym-packaging-scripts",
+  "name": "deskgap-builder",
+  "description": "Build tool for DeskGap",
+  "version": "1.0.0",
   "private": true,
-  "version": "0.0.1",
-  "description": "",
-  "main": "index.js",
+  "main": "n/a",
+  "bin": {
+    "deskgap-mac": "mac-app-store/mac.js",
+    "deskgap-windows": "win-appx/appx.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "patr0nus",
   "license": "MIT",
   "dependencies": {
-    "fs-extra": "^7.0.1",
-    "rcedit": "^1.1.1"
+    "fs-extra": "^9.0.0",
+    "minimist": "1.2.5",
+    "rcedit": "^2.1.1"
+  },
+  "devDependencies": {
+    "@types/minimist": "1.2.0"
   }
 }
