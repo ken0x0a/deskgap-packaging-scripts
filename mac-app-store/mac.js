@@ -40,10 +40,6 @@ function main() {
 function copyResources(args) {
   const { appName, dirname, srcDir } = args;
 
-  // Name of your app.
-  // The path of your app to sign.
-  const APP = appName;
-
   const APP_PATH = path.resolve(process.cwd(), dirname, `${appName}.app`);
   console.log({ APP_PATH });
   const resourcePath = path.resolve(APP_PATH, "Contents/Resources/app");
@@ -54,7 +50,7 @@ function copyResources(args) {
 }
 /** @param {ReturnType<typeof parseArgs>} args */
 function sign(args) {
-  const { appName, dirname, appKey, installKey } = args;
+  const { appName, dirname, appKey, installKey, plistDir } = args;
 
   // Name of your app.
   // The path of your app to sign.
@@ -70,8 +66,8 @@ function sign(args) {
   const INSTALLER_KEY = installKey;
 
   // The path of your plist files.
-  const CHILD_PLIST = "child.plist";
-  const PARENT_PLIST = "parent.plist";
+  const CHILD_PLIST = path.resolve(plistDir, "child.plist");
+  const PARENT_PLIST = path.resolve(plistDir, "parent.plist");
 
   execAll([
     `xattr -rc "${APP_PATH}"`,
@@ -90,25 +86,23 @@ function execAll(commands) {
  * @param {string} command
  */
 function exec(command) {
-  const [executable, ...args] = command.split(/\s+/);
-  spawnSync(executable, args, { stdio: "inherit" });
+  // https://stackoverflow.com/questions/24069344
+  // const [executable, ...args] = command.split(/\s+/);
+  const [executable, ...args] = command.match(/"(?:\\"|\\\\|[^"])*"|\S+/g);
+
+  spawnSync(
+    executable,
+    args.map((string) =>
+      string.startsWith('"') && string.endsWith('"')
+        ? string.substring(1, string.length - 1)
+        : string,
+    ),
+    { stdio: "inherit" },
+  );
 }
 
 function parseArgs() {
-  /**
-   * @type {import('minimist').ParsedArgs & import('./types').ArgsType}
-   */
-  const args = minimist(process.argv.slice(3), {
-    string: ["dirname", "appName", "appKey", "installKey", "icon", "srcDir"],
-    alias: { d: "dirname", a: "appName", i: "icon", s: "srcDir" },
-    default: { dirname: process.cwd(), srcDir: "dist" },
-    "--": true,
-    stopEarly: true /* populate _ with first non-option */,
-    unknown(args, options) {
-      console.error("\x1b[35m%s\x1b[0m", "Unknown option supplied:");
-      throw new Error(JSON.stringify({ args, options }, null, 2));
-    } /* invoked on unknown param */,
-  });
+  const args = require("./parse-args").parseArgs();
 
   /**
    * @param {keyof import('./types').ArgsType} argName

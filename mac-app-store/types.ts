@@ -16,6 +16,10 @@ export type ArgsType = {
    */
   icon: string;
   /**
+   * default to `{process.cwd()}/config/mac
+   */
+  plistDir: string;
+  /**
    * directory contains app resources.
    * relative to dirname.
    * @default dist
