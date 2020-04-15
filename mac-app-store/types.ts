@@ -15,4 +15,10 @@ export type ArgsType = {
    * path to your icon ".ico"
    */
   icon: string;
+  /**
+   * directory contains app resources.
+   * relative to dirname.
+   * @default dist
+   */
+  srcDir: string;
 } & KeyArgs;
