@@ -7,13 +7,13 @@
 	<key>BuildMachineOSBuild</key>
 	<string>18D42</string>
 	<key>CFBundleDisplayName</key>
-	<string>Pym</string>
+	<string>$(DISPLAY_NAME)</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.deskgap.pym</string>
+	<string>$(BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Pym</string>
+	<string>$(BUNDLE_NAME)</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleSupportedPlatforms</key>
