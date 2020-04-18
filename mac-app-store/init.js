@@ -5,11 +5,7 @@
 
 const fs = require("fs");
 const fse = require("fs-extra");
-const minimist = require("minimist");
 const path = require("path");
-
-const CHILD_PLIST = path.resolve(__dirname, "child.plist");
-const PARENT_PLIST = path.resolve(__dirname, "parent.plist");
 
 function main() {
   const args = parseArgs();
@@ -21,8 +17,8 @@ function main() {
   if (path.basename(path.dirname(deskgapPath)) !== "node_modules")
     throw new Error(`"deskgapPath" should be root of "deskgap". got: ${deskgapPath}`);
   const deskgapAppSourcePath = path.resolve(deskgapPath, "dist", "DeskGap.app");
-  const destPath = path.resolve(args.dirname, "build", `${args.appName}.app`);
-  fs.mkdirSync(path.dirname(destPath), { recursive: true });
+  const destPath = path.resolve(args.dirname, args.dirname, `${args.appName}.app`);
+  ensureExistDir(destPath);
   fse.copySync(deskgapAppSourcePath, destPath);
   fs.renameSync(
     path.resolve(destPath, "Contents/MacOS/DeskGap"),
@@ -30,19 +26,22 @@ function main() {
   );
 }
 
+/** @type {(path: string) => void} */
+function ensureExistDir(pathname) {
+  const dirname = path.dirname(pathname);
+  if (!fs.existsSync(dirname)) fs.mkdirSync(dirname, { recursive: true });
+}
 /**
- *
  * @param {import('minimist').ParsedArgs & import('./types').ArgsType} args
  */
 function genConfigs(args) {
   const plistDir = path.resolve(process.cwd(), args.plistDir);
   const cpList = [
-    [path.resolve(__dirname, "child.plist"), plistDir][
-      (path.resolve(__dirname, "parent.plist"), plistDir)
-    ],
+    [path.resolve(__dirname, "child.plist"), path.resolve(plistDir, "child.plist")],
+    [path.resolve(__dirname, "parent.plist"), path.resolve(plistDir, "parent.plist")],
   ];
-  const renameList = [[], []];
-  fs.mkdirSync(plistDir);
+  // const renameList = [[], []];
+  if (!fs.existsSync(plistDir)) fs.mkdirSync(plistDir);
   cpList.forEach(([src, dest]) => {
     fs.copyFileSync(src, dest);
   });

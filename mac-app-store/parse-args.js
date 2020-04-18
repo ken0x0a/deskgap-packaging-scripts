@@ -13,7 +13,7 @@ function parseArgs() {
     string: ["dirname", "appName", "appKey", "installKey", "icon", "srcDir"],
     alias: { d: "dirname", a: "appName", i: "icon", s: "srcDir" },
     default: {
-      dirname: process.cwd(),
+      dirname: "release",
       srcDir: "dist",
       plistDir: path.resolve(process.cwd(), "config/mac"),
     },
