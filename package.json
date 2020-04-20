@@ -5,10 +5,12 @@
   "private": true,
   "main": "n/a",
   "bin": {
+    "deskgap-builder": "bin/deskgap-builder.js",
     "deskgap-mac": "mac-app-store/mac.js",
     "deskgap-windows": "win-appx/appx.js"
   },
   "scripts": {
+    "dev": "tsc -w",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "patr0nus",
